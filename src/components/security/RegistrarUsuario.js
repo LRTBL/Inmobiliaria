@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Avatar,
@@ -8,6 +8,8 @@ import {
   Button,
 } from "@material-ui/core";
 import LaockOutLineIcon from "@material-ui/icons/LockOutlined";
+import { compose } from "recompose";
+import { consumerFirebase } from "../../server";
 
 const style = {
   paper: {
@@ -30,17 +32,47 @@ const style = {
   },
 };
 
-function RegistrarUsuario(props) {
+const RegistrarUsuario = (props) => {
   const [user, setUser] = useState({
     nombre: "",
     apellido: "",
     email: "",
     password: "",
   });
+  const [fire, setFire] = useState(null);
+
+  useEffect(() => {
+    console.log(props);
+    if (fire === null) {
+      setFire(props.firebase);
+    }
+  }, [props.firebase]);
 
   const registerUser = (e) => {
     e.preventDefault();
-    console.log(user);
+    fire.auth
+      .createUserWithEmailAndPassword(user.email, user.password)
+      .then((res) => {
+        const userdb = {
+          userId: res.user.uid,
+          email: user.email,
+          nombre: user.nombre,
+          apellido: user.apellido,
+        };
+        fire.db
+          .collection("Users")
+          .add(userdb)
+          .then((res) => {
+            console.log("Fue un exito", res);
+            props.history.push("/");
+          })
+          .catch((err) => {
+            console.log("Error");
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -119,6 +151,6 @@ function RegistrarUsuario(props) {
       </div>
     </Container>
   );
-}
+};
 
-export default RegistrarUsuario;
+export default compose(consumerFirebase)(RegistrarUsuario);

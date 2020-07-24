@@ -11,7 +11,7 @@ const theme = createMuiTheme({
     common: {
       white: "white",
     },
-    secundary: {
+    secondary: {
       main: "#e53935",
     },
   },
